@@ -1,0 +1,16 @@
+# Core
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
+
+# AI/ML
+torch
+transformers
+sentence-transformers
+faiss-cpu # Hoặc faiss-cpu nếu không có GPU
+pandas
+numpy
+
+# Search
+elasticsearch
