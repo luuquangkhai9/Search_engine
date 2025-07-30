@@ -1,6 +1,8 @@
 import faiss
 import numpy as np
 import pickle
+import torch
+
 from sentence_transformers import SentenceTransformer
 from elasticsearch import Elasticsearch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification # Dùng cho Re-ranker

@@ -11,6 +11,8 @@ sentence-transformers
 faiss-cpu # Hoặc faiss-cpu nếu không có GPU
 pandas
 numpy
+pyarrow
+fastparquet
 
 # Search
 elasticsearch

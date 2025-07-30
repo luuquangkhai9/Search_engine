@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Tìm kiếm</title>
+    <style>
+        :root {
+            --background-color: #121212; --surface-color: #1e1e1e;
+            --primary-color: #bb86fc; --text-color: #e0e0e0;
+            --border-color: #333; --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            font-family: var(--font-family); background-color: var(--background-color);
+            color: var(--text-color); margin: 0; display: flex;
+            flex-direction: column; height: 100vh;
+        }
+        header { padding: 1.5rem; border-bottom: 1px solid var(--border-color); background-color: var(--surface-color); }
+        .search-container { display: flex; max-width: 800px; margin: 0 auto; }
+        #search-input {
+            flex-grow: 1; padding: 0.8rem 1rem; font-size: 1rem;
+            border-radius: 2rem 0 0 2rem; border: 1px solid var(--border-color);
+            background-color: #2c2c2c; color: var(--text-color);
+            outline: none; transition: border-color 0.2s;
+        }
+        #search-input:focus { border-color: var(--primary-color); }
+        #search-button {
+            padding: 0.8rem 1.5rem; font-size: 1rem; border-radius: 0 2rem 2rem 0;
+            border: 1px solid var(--primary-color); background-color: var(--primary-color);
+            color: #121212; cursor: pointer; font-weight: bold; transition: background-color 0.2s;
+        }
+        #search-button:hover { background-color: #a764fc; }
+        .main-content { display: flex; flex-grow: 1; overflow: hidden; }
+        #results-panel { flex: 1; padding: 1.5rem; overflow-y: auto; border-right: 1px solid var(--border-color); }
+        #results-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1rem; color: #aaa; height: 20px;
+        }
+        #results-header h4 { margin: 0; color: var(--text-color); }
+        #results-header small { font-style: italic; }
+        .result-item {
+            padding: 1rem; margin-bottom: 1rem; background-color: var(--surface-color);
+            border-radius: 8px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 4px solid transparent;
+        }
+        .result-item:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .result-item.active { border-left-color: var(--primary-color); }
+        #detail-panel {
+            flex: 1.5; padding: 1.5rem; overflow-y: auto; white-space: pre-wrap;
+            word-wrap: break-word; background-color: #161616;
+        }
+        .loader { text-align: center; padding: 2rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Nhập câu truy vấn của bạn...">
+            <button id="search-button">Tìm kiếm</button>
+        </div>
+    </header>
+    <main class="main-content">
+        <div id="results-panel">
+            <div id="results-header">
+                <h4>Kết quả</h4>
+                <small id="query-time"></small>
+            </div>
+            <div id="results-list"></div>
+        </div>
+        <div id="detail-panel"></div>
+    </main>
+    <script>
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const resultsList = document.getElementById('results-list');
+        const detailPanel = document.getElementById('detail-panel');
+        const queryTimeEl = document.getElementById('query-time');
+
+        async function performSearch() {
+            const query = searchInput.value.trim();
+            if (!query) return;
+            resultsList.innerHTML = '<div class="loader">Đang tìm kiếm...</div>';
+            detailPanel.textContent = '';
+            queryTimeEl.textContent = '';
+            try {
+                const response = await fetch('http://localhost:8000/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query, top_k: 15 })
+                });
+                if (!response.ok) { throw new Error('Lỗi mạng hoặc server'); }
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                resultsList.innerHTML = `<div class="loader" style="color: #cf6679;">Lỗi: ${error.message}</div>`;
+            }
+        }
+        
+        // MỚI: Hàm để lấy và hiển thị toàn bộ văn bản
+        async function showFullDocument(docId, targetElement) {
+            detailPanel.textContent = 'Đang tải nội dung đầy đủ...';
+            try {
+                const response = await fetch(`http://localhost:8000/document/${docId}`);
+                if (!response.ok) { throw new Error('Không tìm thấy văn bản'); }
+                const data = await response.json();
+                detailPanel.textContent = data.content;
+                
+                document.querySelectorAll('.result-item').forEach(el => el.classList.remove('active'));
+                targetElement.classList.add('active');
+            } catch (error) {
+                detailPanel.textContent = `Lỗi: ${error.message}`;
+            }
+        }
+
+        function displayResults(data) {
+            const results = data.results;
+            const duration = data.duration;
+            resultsList.innerHTML = '';
+            queryTimeEl.textContent = `Thực hiện trong ${duration.toFixed(3)} giây`;
+            if (results.length === 0) {
+                resultsList.innerHTML = '<div class="loader">Không tìm thấy kết quả nào.</div>';
+                return;
+            }
+            results.forEach(result => {
+                const item = document.createElement('div');
+                item.className = 'result-item';
+                item.textContent = result.content.substring(0, 250) + '...';
+                
+                // MỚI: Lấy doc_id từ chunk_id
+                const docId = result.id.split('_')[0];
+                
+                item.addEventListener('dblclick', () => {
+                    showFullDocument(docId, item);
+                });
+                
+                resultsList.appendChild(item);
+            });
+        }
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') { performSearch(); }
+        });
+    </script>
+</body>
+</html>

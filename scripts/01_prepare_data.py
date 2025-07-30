@@ -1,27 +1,64 @@
 import pandas as pd
-import pickle
+from underthesea import sent_tokenize
+from transformers import AutoTokenizer
 
-def chunk_text(text, chunk_size=256, overlap=50):
-    """Chia văn bản thành các đoạn nhỏ có chồng lấn."""
-    words = text.split()
+# Tải tokenizer của mô hình Vietnamese Embedding
+MODEL_NAME = 'AITeamVN/Vietnamese_Embedding_v2'
+TOKENIZER = AutoTokenizer.from_pretrained(MODEL_NAME)
+
+def chunk_text_by_sentence(text, max_tokens=256, sentence_overlap=2):
+    """
+    Chia văn bản thành các đoạn nhỏ (chunk) dựa trên tách câu từ underthesea.
+    Mỗi chunk có tối đa max_tokens token. Có thể chồng lắp câu giữa các chunk.
+    """
+    try:
+        sentences = sent_tokenize(text)
+    except Exception as e:
+        print(f"[Lỗi] Không thể tách câu văn bản: {e}")
+        return []
+
     chunks = []
-    for i in range(0, len(words), chunk_size - overlap):
-        chunk = " ".join(words[i:i + chunk_size])
-        chunks.append(chunk)
+    current_chunk_sentences = []
+    current_chunk_tokens = 0
+
+    for i, sentence in enumerate(sentences):
+        sentence_tokens = len(TOKENIZER.encode(sentence, add_special_tokens=False))
+
+        # Nếu thêm câu này sẽ vượt quá giới hạn token
+        if current_chunk_tokens + sentence_tokens > max_tokens and current_chunk_sentences:
+            chunks.append(" ".join(current_chunk_sentences))
+
+            # Tạo overlap: lấy lại n câu cuối của chunk trước
+            overlap_start = max(0, len(current_chunk_sentences) - sentence_overlap)
+            current_chunk_sentences = current_chunk_sentences[overlap_start:]
+            current_chunk_tokens = len(TOKENIZER.encode(" ".join(current_chunk_sentences), add_special_tokens=False))
+
+        # Thêm câu vào chunk hiện tại
+        current_chunk_sentences.append(sentence)
+        current_chunk_tokens += sentence_tokens
+
+    # Thêm chunk cuối cùng nếu còn
+    if current_chunk_sentences:
+        chunks.append(" ".join(current_chunk_sentences))
+
     return chunks
 
 def main():
-    # 1. Đọc dữ liệu
     df = pd.read_csv('data/articles.csv')
     print(f"Đã đọc {len(df)} bài viết.")
 
-    # 2. Chunking
     all_chunks = []
+
     for index, row in df.iterrows():
-        doc_id = row['id']
-        content = row['content']
-        chunks = chunk_text(content)
-        
+        doc_id = row.get('id')
+        content = row.get('content')
+
+        if not isinstance(content, str) or not content.strip():
+            print(f"[Bỏ qua] Dòng {index} không có nội dung hợp lệ.")
+            continue
+
+        chunks = chunk_text_by_sentence(content)
+
         for i, chunk in enumerate(chunks):
             all_chunks.append({
                 'doc_id': doc_id,
@@ -29,10 +66,9 @@ def main():
                 'content': chunk
             })
 
-    # 3. Lưu lại
     chunked_df = pd.DataFrame(all_chunks)
     chunked_df.to_csv('data/chunked_articles.csv', index=False)
-    print(f"Đã tạo và lưu {len(chunked_df)} chunks vào data/chunked_articles.csv")
+    print(f"Đã tạo và lưu {len(chunked_df)} chunks vào 'data/chunked_articles.csv'")
 
 if __name__ == "__main__":
     main()
