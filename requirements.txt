@@ -13,6 +13,7 @@ pandas
 numpy
 pyarrow
 fastparquet
+semantic-text-splitter
 
 # Search
 elasticsearch
