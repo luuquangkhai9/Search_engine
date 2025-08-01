@@ -11,9 +11,9 @@ Thiết lập chạy:
         DB_HOST = "localhost"
         DB_PORT = "5433"
     Lệnh tạo :
-    elastic
+    ## elastic
        docker run --name search_es_v2 -p 9200:9200 -e "discovery.type=single-node" -e "xpack.security.enabled=false" -d docker.elastic.co/elasticsearch/elasticsearch:7.17.14
-    database
+    ## database
         docker run --name search_db_v2 -e POSTGRES_PASSWORD=mysecretpassword_v2 -e POSTGRES_USER=myuser_v2 -e POSTGRES_DB=searchdb_v2 -p 5433:5432 -d postgres:15
     
 
