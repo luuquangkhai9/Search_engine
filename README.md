@@ -4,7 +4,7 @@ Thiết lập chạy:
 1. Chạy môi trường ảo puython 3.11 (Phiên bản không xảy ra xung đột thư viện)
 2. Cài đặt danh sách thư viện có trong requirements.txt
 3. Tạo 2 container docker cho postgre và elastic (es phiên bản 8 gặp lỗi bảo mật, dùng phiên bản 7)
-    Thông sô database(postgre):
+    # Thông sô database(postgre):
         DB_NAME = "searchdb_v2"
         DB_USER = "myuser_v2"
         DB_PASS = "mysecretpassword_v2"
