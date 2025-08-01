@@ -41,7 +41,6 @@ def get_content_by_ids(chunk_ids: list[str]):
     conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST, port=DB_PORT)
     cur = conn.cursor()
     
-    # Câu lệnh SQL hiệu quả để lấy nhiều ID
     query = "SELECT chunk_id, content FROM chunks WHERE chunk_id = ANY(%s);"
     cur.execute(query, (chunk_ids,))
     rows = cur.fetchall()
@@ -63,7 +62,7 @@ def get_full_article_by_doc_id(doc_id: str):
     
     query = "SELECT full_content FROM articles WHERE doc_id = %s;"
     cur.execute(query, (doc_id,))
-    row = cur.fetchone() # Lấy một kết quả duy nhất
+    row = cur.fetchone() 
     
     cur.close()
     conn.close()

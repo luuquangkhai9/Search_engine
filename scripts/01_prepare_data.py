@@ -2,14 +2,14 @@ import pandas as pd
 from underthesea import sent_tokenize
 from transformers import AutoTokenizer
 
-# Tải tokenizer của mô hình Vietnamese Embedding
+# Tải tokenizer của mô hình
 MODEL_NAME = 'AITeamVN/Vietnamese_Embedding_v2'
 TOKENIZER = AutoTokenizer.from_pretrained(MODEL_NAME)
 
 def chunk_text_by_sentence(text, max_tokens=256, sentence_overlap=2):
     """
     Chia văn bản thành các đoạn nhỏ (chunk) dựa trên tách câu từ underthesea.
-    Mỗi chunk có tối đa max_tokens token. Có thể chồng lắp câu giữa các chunk.
+    Mỗi chunk có tối đa max_tokens. chồng lắp câu giữa các chunk.
     """
     try:
         sentences = sent_tokenize(text)

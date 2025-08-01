@@ -2,7 +2,6 @@ import pandas as pd
 import psycopg2
 import sys
 
-# --- THÔNG TIN KẾT NỐI DATABASE ---
 DB_NAME = "searchdb"
 DB_USER = "myuser"
 DB_PASS = "mysecretpassword"
@@ -17,7 +16,6 @@ def migrate_original_articles():
         cur = conn.cursor()
         print("Kết nối database thành công!")
 
-        # Tạo bảng articles nếu chưa tồn tại
         cur.execute("""
             CREATE TABLE IF NOT EXISTS articles (
                 doc_id VARCHAR(255) PRIMARY KEY,
@@ -27,13 +25,11 @@ def migrate_original_articles():
         conn.commit()
         print("Bảng 'articles' đã sẵn sàng.")
 
-        # Đọc dữ liệu từ file articles.csv gốc
+        # Đọc dữ liệu
         df = pd.read_csv('data/articles.csv')
         print(f"Đang di chuyển {len(df)} bài viết gốc vào database...")
 
-        # Insert từng dòng vào database
         for index, row in df.iterrows():
-            # Đảm bảo doc_id là string để khớp với kiểu dữ liệu VARCHAR
             doc_id_str = str(row['id'])
             cur.execute(
                 "INSERT INTO articles (doc_id, full_content) VALUES (%s, %s) ON CONFLICT (doc_id) DO UPDATE SET full_content = EXCLUDED.full_content;",

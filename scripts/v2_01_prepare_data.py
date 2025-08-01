@@ -4,7 +4,7 @@ from transformers import AutoTokenizer
 from tqdm import tqdm
 
 PARQUET_FILE_PATH = r'C:\Users\Administrator\Documents\Search_engine\data\sample_100000.parquet'
-OUTPUT_CSV_PATH = 'data/chunked_v2.csv'
+OUTPUT_CSV_PATH = r'C:\Users\Administrator\Documents\Search_engine\data\chunked_50000_v2.csv'
 MODEL_NAME = 'keepitreal/vietnamese-sbert'
 
 TOKENIZER = AutoTokenizer.from_pretrained(MODEL_NAME)

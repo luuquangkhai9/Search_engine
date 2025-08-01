@@ -18,7 +18,7 @@ def create_faiss_index_v2():
     model = SentenceTransformer(MODEL_NAME)
     
     d = model.get_sentence_embedding_dimension()
-    print(f"Số chiều vector của mô hình: {d}") # Sẽ in ra 768
+    print(f"Số chiều vector của mô hình: {d}") # 768 chiều
 
     conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST, port=DB_PORT)
     df = pd.read_sql_query("SELECT chunk_id, content FROM chunks", conn)
@@ -32,7 +32,7 @@ def create_faiss_index_v2():
     embeddings = model.encode(texts, convert_to_tensor=True, show_progress_bar=True, batch_size=32)
     embeddings = embeddings.cpu().numpy().astype('float32')
     
-    # Dùng L2 distance mặc định, phù hợp cho Cosine Similarity
+    # L2 distance mặc định
     index = faiss.IndexHNSWFlat(d, 32) 
     print("Đang xây dựng index HNSW...")
     index.add(embeddings)

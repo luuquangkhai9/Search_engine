@@ -2,7 +2,6 @@ import pandas as pd
 import psycopg2
 import sys
 
-# --- THÔNG TIN KẾT NỐI DATABASE ---
 DB_NAME = "searchdb"
 DB_USER = "myuser"
 DB_PASS = "mysecretpassword"
@@ -32,20 +31,18 @@ def migrate_data():
         conn.commit()
         print("Bảng 'chunks' đã sẵn sàng.")
         
-        # --- MỚI: Xóa toàn bộ dữ liệu cũ trong bảng ---
         print("Đang xóa dữ liệu cũ...")
         cur.execute("TRUNCATE TABLE chunks;")
         conn.commit()
         print("Đã xóa dữ liệu cũ thành công.")
         # ---------------------------------------------
 
-        # Đọc dữ liệu từ file CSV
+        # Đọc dữ liệu từ file
         df = pd.read_csv('data/chunked_articles.csv')
         print(f"Đang di chuyển {len(df)} chunks mới vào database...")
 
-        # Insert từng dòng vào database
+        # Insert vào database
         for index, row in df.iterrows():
-            # Không cần ON CONFLICT nữa vì bảng đã trống
             cur.execute(
                 "INSERT INTO chunks (chunk_id, doc_id, content) VALUES (%s, %s, %s);",
                 (row['chunk_id'], row['doc_id'], row['content'])

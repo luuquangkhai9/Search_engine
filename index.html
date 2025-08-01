@@ -96,7 +96,6 @@
             }
         }
         
-        // MỚI: Hàm để lấy và hiển thị toàn bộ văn bản
         async function showFullDocument(docId, targetElement) {
             detailPanel.textContent = 'Đang tải nội dung đầy đủ...';
             try {
@@ -121,21 +120,25 @@
                 resultsList.innerHTML = '<div class="loader">Không tìm thấy kết quả nào.</div>';
                 return;
             }
+
             results.forEach(result => {
                 const item = document.createElement('div');
                 item.className = 'result-item';
                 item.textContent = result.content.substring(0, 250) + '...';
                 
-                // MỚI: Lấy doc_id từ chunk_id
-                const docId = result.id.split('_')[0];
+                // THAY ĐỔI: Sử dụng trực tiếp trường 'doc_id' do API trả về.
+                // Không cần phải tách chuỗi nữa.
+                item.dataset.docId = result.doc_id;
                 
-                item.addEventListener('dblclick', () => {
-                    showFullDocument(docId, item);
+                item.addEventListener('dblclick', (event) => {
+                    const docIdToFetch = event.currentTarget.dataset.docId;
+                    showFullDocument(docIdToFetch, event.currentTarget);
                 });
                 
                 resultsList.appendChild(item);
             });
         }
+        
         searchButton.addEventListener('click', performSearch);
         searchInput.addEventListener('keyup', (event) => {
             if (event.key === 'Enter') { performSearch(); }

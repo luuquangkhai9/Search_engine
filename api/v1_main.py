@@ -1,4 +1,4 @@
-import time # MỚI: Import thư viện time
+import time
 from fastapi import FastAPI
 from pydantic import BaseModel
 from . import v1_search_logic
@@ -24,8 +24,6 @@ class SearchRequest(BaseModel):
 
 @app.post("/search")
 def search(request: SearchRequest):
-    # --- THAY ĐỔI Ở ĐÂY ---
-    # 1. Ghi lại thời gian bắt đầu
     start_time = time.time()
     
     # Logic tìm kiếm
@@ -35,14 +33,12 @@ def search(request: SearchRequest):
     )
     results = v1_search_logic.get_content_by_ids(relevant_ids)
     
-    # 2. Ghi lại thời gian kết thúc và tính toán
     end_time = time.time()
     duration = end_time - start_time
     
-    # 3. Thêm thời gian vào kết quả trả về
     return {
         "status": "success",
-        "duration": duration, # Thêm trường duration
+        "duration": duration, 
         "results": results
     }
 

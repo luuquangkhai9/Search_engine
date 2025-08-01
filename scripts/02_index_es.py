@@ -4,12 +4,9 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 import pandas as pd
 
-# THÊM DÒNG NÀY: Bảo Python không dùng proxy cho localhost
 os.environ['no_proxy'] = 'localhost,127.0.0.1'
 
-# Kết nối tới Elasticsearch (cần chạy ES trên Docker trước)
 es = Elasticsearch("https://localhost:9200")
-# ... phần còn lại của file
 INDEX_NAME = "vietnamese_articles"
 
 def create_es_index():
@@ -24,12 +21,11 @@ def create_es_index():
             "chunk_id": {"type": "keyword"},
             "content": {
                 "type": "text",
-                "analyzer": "standard"  # Có thể thay bằng tiếng Việt
+                "analyzer": "standard" 
             }
         }
     }
 
-    # ✅ Sửa lại dòng này
     es.indices.create(index=INDEX_NAME, body={"mappings": mapping})
     print(f"Đã tạo index '{INDEX_NAME}'.")
 
