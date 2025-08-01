@@ -9,8 +9,8 @@ DB_PASS = "mysecretpassword_v2"
 DB_HOST = "localhost"
 DB_PORT = "5433" # Cổng mới
 
-PARQUET_FILE_PATH = r'C:\Users\Administrator\Documents\Search_engine\data\sample_10000.parquet'
-CHUNKED_CSV_PATH = 'data/chunked_articles_v2.csv'
+PARQUET_FILE_PATH = r'C:\Users\Administrator\Documents\Search_engine\data\sample_50000.parquet'
+CHUNKED_CSV_PATH = 'data/chunked_50000_v2.csv'
 
 def migrate_v2():
     try:

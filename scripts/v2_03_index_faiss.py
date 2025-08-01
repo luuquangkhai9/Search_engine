@@ -11,7 +11,7 @@ DB_PASS = "mysecretpassword_v2"
 DB_HOST = "localhost"
 DB_PORT = "5433"
 
-MODEL_NAME = 'keepitreal/vietnamese-sbert' # Tên mô hình mới
+MODEL_NAME = 'keepitreal/vietnamese-sbert' 
 
 def create_faiss_index_v2():
     print(f"Đang tải model embedding: {MODEL_NAME}...")

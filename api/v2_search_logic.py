@@ -4,6 +4,8 @@ import pickle
 import torch
 from sentence_transformers import SentenceTransformer
 import psycopg2
+from elasticsearch import Elasticsearch # MỚI
+
 
 # --- THÔNG TIN KẾT NỐI DATABASE V2 ---
 DB_NAME = "searchdb_v2"
@@ -23,14 +25,38 @@ FAISS_INDEX = faiss.read_index('models/faiss_v2.index')
 with open('models/id_mapping_v2.pkl', 'rb') as f:
     ID_MAPPING = pickle.load(f)
 
-print("Models and data loaded successfully!")
+ES = Elasticsearch("http://localhost:9200")
+ES_INDEX_NAME = "articles_v2"
+
+print("Models and data loaded success")
 
 # --- HÀM LOGIC ---
+#Tìm với FAISS
 def search_faiss(query, top_k=50):
     query_vector = EMBEDDING_MODEL.encode([query], convert_to_numpy=True)
     distances, indices = FAISS_INDEX.search(query_vector, top_k)
     return [ID_MAPPING[i] for i in indices[0]]
+#Tìm với Elasticsearch
+def search_es(query, top_k=50):
+    response = ES.search(
+        index=ES_INDEX_NAME,
+        query={"match": {"content": query}},
+        size=top_k
+    )
+    return [hit['_id'] for hit in response['hits']['hits']]
 
+# Hàm tổng hợp kết quả từ FAISS và Elasticsearch
+def reciprocal_rank_fusion(results_lists, k=60):
+    scores = {}
+    for results in results_lists:
+        for rank, doc_id in enumerate(results):
+            if doc_id not in scores:
+                scores[doc_id] = 0
+            scores[doc_id] += 1 / (k + rank + 1)
+    
+    return sorted(scores.keys(), key=lambda x: scores[x], reverse=True)
+
+#Hàm lấy chunk
 def get_content_by_ids(chunk_ids: list[str]):
     if not chunk_ids: return []
     conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST, port=DB_PORT)
